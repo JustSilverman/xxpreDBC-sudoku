@@ -6,7 +6,7 @@ module Sudoku
     attr_accessor :board, :beginning_board, :player
 
     def initialize
-      @board = Board.new
+      @board           = Board.new
       @beginning_board = Board.new
     end
 
@@ -32,43 +32,25 @@ module Sudoku
         type = gets.chomp.downcase
         case type
         when 'existing'
-          self.setup_existing_board
-          break
+          break self.select_existing_board
         when 'own'
-          self.custom_board_greeting
-          break
+          break self.custom_board_greeting
         when 'quit'
-          self.quit_game
-          break
+          break self.quit_game
         else
           puts "Please type 'existing' or 'own' or 'quit'."
         end
       end
     end
 
-    def setup_existing_board
+    def select_existing_board
     # User chooses difficulty level.
       board = Existing.new
       puts "\n" << "So you want to use an existing board.  What level are you in the mood for?  ('mild', 'medium', 'spicy', or 'en fuego')"
       loop do
         difficulty = gets.chomp.downcase
-        case difficulty
-        when 'mild'
-          @board.populate_board(board.mild)
-          self.set_board
-          break
-        when 'medium'
-          @board.populate_board(board.medium)
-          self.set_board
-          break
-        when 'spicy'
-          @board.populate_board(board.spicy)
-          self.set_board
-          break
-        when 'en fuego'
-          @board.populate_board(board.en_fuego)
-          self.set_board
-          break
+        if ['mild', 'medium', 'spicy', 'en fuego'].include?(difficulty)
+          break setup_existing_board(board.send("#{difficulty}"))
         else
           puts "\n" << "Sorry. I didn't get that.  What are you in the mood for?  ('mild', 'medium', 'spicy', or 'en fuego')"
         end
@@ -89,22 +71,15 @@ module Sudoku
         response = gets.chomp
         case response
         when 'quit'
-          self.quit_game
-          break
+          break self.quit_game
         when 'existing'
-          self.setup_existing_board
-          break
+          break self.select_existing_board
         else
           row = self.parse_row(response)
           if self.validate_row(row)
             self.add_row(row, row_id)
+            row_id == 9 ? (break self.set_board) : puts("Thanks.  Go ahead and add row #{row_id + 1}.")
             row_id += 1
-            if row_id == 10
-              self.set_board
-              break
-            else
-              puts "Thanks.  Go ahead and add row " << "#{row_id}."
-            end
           else
             puts "That wasn't quite right.  Try again."
           end
@@ -112,10 +87,15 @@ module Sudoku
       end
     end
 
+    def setup_existing_board(board)
+      @board.populate_board(board)
+      self.set_board
+    end
+
     def set_board
     # Check for duplicate solutions in any row, column or block
     # No validation board is actually solvable
-    # Creates copy of board in case user wants to start over 
+    # Creates copy of board in case user wants to start over
       if @board.board_errors?
         @board.print_board
         puts "\n" << "Looks like you have some errors in the board.  Remember no column, row or block can have the same number.  Let's start over."
@@ -148,14 +128,11 @@ module Sudoku
         when 'check answers'
           @board.solved?
         when 'solve the puzzle'
-          @beginning_board.solve
-          break
+          self.game_setup if @beginning_board.solve
         when 'start over'
-          self.game_setup
-          break
+          break self.game_setup
         when 'quit'
-          self.quit_game
-          break
+          break self.quit_game
         else
           puts "\n" << "Sorry.  I didn't get that."
         end
@@ -176,25 +153,21 @@ module Sudoku
       self.setup_custom_board
     end
 
-    def add_row row=[], row_id
+    def add_row(row=[], row_id)
       @board.add_board_row(row, row_id)
     end
 
-    def parse_row str 
+    def parse_row(str)
     # Helper method for basic row validation
-      row = []
-      str.split(',').each {|v| row << v.to_i}
-      row
+      [].tap do |row|
+        str.split(',').each {|v| row << v.to_i}
+      end
     end
 
-    def validate_row row
+    def validate_row(row)
     # Basic validation for user generated row.
-      return false unless row.class == Array
-        return false unless row.length == 9
-          row.each do |value|
-            return false unless value.class == Fixnum
-            return false unless value >=0 && value <= 9
-          end
+      return false unless row.length == 9
+      row.each { |value| return false unless value.class == Fixnum || value >=0 && value <= 9 }
     end
 
   #################################################################
@@ -221,36 +194,33 @@ module Sudoku
         end
       end
     end
-      
-    def confirm_id_selection id
+
+    def confirm_id_selection(id)
     # Provide user ability to confirm or change selection.
       puts "\n" << "Is this the cell you want to set? ('yes' / 'no')"
       loop do
-        response = gets.chomp.downcase 
+        response = gets.chomp.downcase
         case response
         when 'no'
-          self.get_active_cell_id
-          break
+          break self.get_active_cell_id
         when 'yes'
-          self.set_cell_value(id)
-          break
+          break self.set_cell_value(id)
         else
          puts "\n" << "Sorry.  I didn't get that.  Please type 'yes' or 'no'."
-        end 
+        end
       end
     end
 
-    def set_cell_value id
+    def set_cell_value(id)
     # Validates input value is between 1 and 9
-    # Needs validation an integer and not a string or other is input 
+    # Needs validation an integer and not a string or other is input
       loop do
         puts "What is the value you would like to set cell #{id} to?"
         value = gets.chomp.downcase.to_i
         if value.between?(1,9)
           @board.cell(id).set_solution(value)
           puts "Here is the updated board."
-          @board.print_board
-          break
+          break @board.print_board
         else
           puts "\n" << "The cell value must be between 1 and 9."
         end

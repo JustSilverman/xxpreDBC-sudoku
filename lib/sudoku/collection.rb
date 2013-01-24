@@ -8,28 +8,24 @@ module Sudoku
 
     attr_accessor :cells, :solutions
 
-    def initialize cells=[]
+    def initialize(cells=[])
       @cells = cells
       @solutions = []
     end
 
-    def add_cell cell
+    def add_cell(cell)
       @cells << cell
     end
 
-    def cell id
-      @cells.each do |cell|
-        return cell if cell.id == id
-      end
+    def cell(id)
+      @cells.each { |cell| return cell if cell.id == id }
     end
 
     def values
     # Returns an array of arrays of the remaining possible values for each cell in self
-      values = []
-      @cells.each do |cell|
-        values.push(cell.values)
+      [].tap do |values|
+        @cells.each { |cell| values.push(cell.values) }
       end
-      values
     end
 
     def solutions
@@ -37,8 +33,7 @@ module Sudoku
     # It must be updated prior to being returned to capture
     # any cells that have been solved since the last update
       @cells.each do |cell|
-        @solutions << cell.solution unless
-          cell.solution.nil? || @solutions.include?(cell.solution)
+        @solutions << cell.solution unless cell.solution.nil? || @solutions.include?(cell.solution)
       end
       @solutions
     end
@@ -59,28 +54,17 @@ module Sudoku
   ############ FLEET OF SOLVER METHODS AND HELPER METHODS ############
   ####################################################################
 
-  def solve_by_values val=[]
+  def solve_by_values(val)
     # Solves by removing possible solutions from a collection of cells.
     # Cells within the collection will be solved when only one possible solution reaains.
-      @cells.each do |cell|
-          cell.update_cell_val( val )
-      end
-    end
+    @cells.each { |cell| cell.update_cell_val( val ) }
+  end
 
     def solve_by_solutions
     # Solves by finding possible solutions that exist only once within a particular collection.
     # The cell where that unique possible solution exists is set to such unique solution.
-      values = self.values
-      uniqs = self.uniq_values
       @cells.each do |cell|
-        if cell.solution.nil?
-          uniqs.each do |u|
-            if cell.values.include?(u)
-              cell.set_solution(u)
-              uniqs.delete(u)
-            end
-          end
-        end
+        self.uniq_values.each { |u| cell.set_solution(u) if cell.values.include?(u) } if cell.solution.nil?
       end
     end
 
@@ -91,22 +75,13 @@ module Sudoku
     # cell in which it is found.
       count_hash = {}
       values = self.values.flatten.sort.each do |value|
-        if count_hash[value].nil?
-          count_hash[value] = 1
-        else
-          count_hash[value] = count_hash[value] + 1
-        end
+        count_hash[value] = count_hash[value].nil? ? 1 : (count_hash[value] + 1)
       end
-      count_hash.delete_if {|key, value| value > 1}
-      count_hash.keys
+      count_hash.delete_if { |key, value| value > 1 }.keys
     end
 
     def solve_by_doubles
-      unless self.doubles.nil?
-        @cells.each do |cell|
-          cell.update_cell_val(self.doubles)
-        end
-      end
+      @cells.each { |cell| cell.update_cell_val(self.doubles) } unless self.doubles.nil?
     end
 
     def doubles
@@ -116,24 +91,20 @@ module Sudoku
     # have the same two values as possible solutions.  This indicates that no other
     # cell in the collection could be either of those two values.
       doubles = {}
-      @cells.each do |cell|
-        doubles[cell.id] = cell.values if cell.values.length == 2
-      end
-      doubles_array = nil
-      if doubles.length >= 2
+      @cells.each { |cell| doubles[cell.id] = cell.values if cell.values.length == 2 }
+
+      return nil unless doubles.length >= 2
+      nil.tap do |doubles_array|
         doubles.each do |k, v|
           copy = doubles.dup
           copy.delete(k)
           doubles_array = v if copy.has_value?(v)
         end
-        doubles_array
       end
     end
 
     def solve_by_triples
-      @cells.each do |cell|
-        cell.update_cell_triples(self.triples) unless self.triples.nil?
-      end
+      @cells.each { |cell| cell.update_cell_triples(self.triples) unless self.triples.nil? }
     end
 
     def triples
@@ -144,8 +115,7 @@ module Sudoku
     # This indicates that no other cell in the collection could be any of those three values.
       unless self.triples_cells.nil?
         values = []
-        combos = self.combination_values.values
-        combos.each do |val|
+        self.combination_values.values.each do |val|
           values << val.flatten.uniq if val.flatten.uniq.length == 3
         end
         values.flatten
@@ -157,7 +127,7 @@ module Sudoku
     # Finds any cells that could potentially be part of a triple.
     # Triples must have 2 or 3 possible solutions remaining.
       t_cells = @cells.dup
-      t_cells.keep_if{|c| c.values.length == 2 || c.values.length == 3}
+      t_cells.keep_if {|c| c.values.length == 2 || c.values.length == 3}
       t_cells if t_cells.length >= 3
     end
 
@@ -166,17 +136,16 @@ module Sudoku
     # Converts potential triplet combos into hash with the hash values
     # the values of each cell in each combination.
       unless self.triples_cells.nil?
-        combinations = self.potential_triplet_combos
         cells_array = self.triples_cells
-        triple_combos = {}; i = 1
-
-        combinations.values.each do |combo|
-          a = []
-          triple_combos[i] = a
-          combo.each {|index| a << cells_array[index].values}
-          i += 1
+        i = 1
+        {}.tap do |triple_combos|
+          self.potential_triplet_combos.values.each do |combo|
+            a = []
+            triple_combos[i] = a
+            combo.each {|index| a << cells_array[index].values}
+            i += 1
+          end
         end
-        triple_combos
       end
     end
 

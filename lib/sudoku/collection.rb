@@ -14,13 +14,13 @@ module Sudoku
     end
 
     def add_cell cell
-      @cells << cell  
+      @cells << cell
     end
 
-    def cell id 
+    def cell id
       @cells.each do |cell|
         return cell if cell.id == id
-      end  
+      end
     end
 
     def values
@@ -37,14 +37,14 @@ module Sudoku
     # It must be updated prior to being returned to capture
     # any cells that have been solved since the last update
       @cells.each do |cell|
-        @solutions << cell.solution unless 
+        @solutions << cell.solution unless
           cell.solution.nil? || @solutions.include?(cell.solution)
       end
       @solutions
     end
 
     def check_solutions
-      self.solutions.sort == [1,2,3,4,5,6,7,8,9]
+      self.solutions.sort == (1..9).to_a
     end
 
     def errors?
@@ -74,7 +74,7 @@ module Sudoku
       uniqs = self.uniq_values
       @cells.each do |cell|
         if cell.solution.nil?
-          uniqs.each do |u| 
+          uniqs.each do |u|
             if cell.values.include?(u)
               cell.set_solution(u)
               uniqs.delete(u)
@@ -87,10 +87,10 @@ module Sudoku
     def uniq_values
     # Helper method for solve_by_solutions
     # Finds and returns any remaining possible values in the collection that are only present in one cell.
-    # Finding a unique value indicates such value should be the solution of 
+    # Finding a unique value indicates such value should be the solution of
     # cell in which it is found.
       count_hash = {}
-      values = self.values.flatten.sort.each do |value| 
+      values = self.values.flatten.sort.each do |value|
         if count_hash[value].nil?
           count_hash[value] = 1
         else
@@ -138,10 +138,10 @@ module Sudoku
 
     def triples
     # Helper method for solve_by_triples
-    # Finds and returns Triples. Returned as array of 3 possible values in Triple. 
-    # Triples represent 3 cells in one collection that do not contain 
+    # Finds and returns Triples. Returned as array of 3 possible values in Triple.
+    # Triples represent 3 cells in one collection that do not contain
     # any other numbers other than the three possible values of those three cells
-    # This indicates that no other cell in the collection could be any of those three values.  
+    # This indicates that no other cell in the collection could be any of those three values.
       unless self.triples_cells.nil?
         values = []
         combos = self.combination_values.values
@@ -163,13 +163,13 @@ module Sudoku
 
     def combination_values
     # Helper method for solve_by_triples
-    # Converts potential triplet combos into hash with the hash values 
+    # Converts potential triplet combos into hash with the hash values
     # the values of each cell in each combination.
       unless self.triples_cells.nil?
         combinations = self.potential_triplet_combos
         cells_array = self.triples_cells
         triple_combos = {}; i = 1
-        
+
         combinations.values.each do |combo|
           a = []
           triple_combos[i] = a
@@ -191,7 +191,7 @@ module Sudoku
 
         loop do
           break if a == length - 1
-              
+
           while c <= length - 1
             hash[count] = [a, b, c]
             count += 1; c += 1

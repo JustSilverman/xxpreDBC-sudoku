@@ -136,13 +136,11 @@ module Sudoku
     # the values of each cell in each combination.
       unless self.triples_cells.nil?
         cells_array = self.triples_cells
-        i = 1
+
         {}.tap do |triple_combos|
-          self.potential_triplet_combos.values.each do |combo|
-            a = []
-            triple_combos[i] = a
-            combo.each {|index| a << cells_array[index].values}
-            i += 1
+          self.potential_triplet_combos.values.each_with_index do |combo, i|
+            triple_combos[i] = []
+            combo.each {|index| triple_combos[i] << cells_array[index].values}
           end
         end
       end
@@ -155,23 +153,24 @@ module Sudoku
     # i.e. If there are 5 triples_cells, this method would return all 10 3 cell combinations
       unless self.triples_cells.nil?
         length = self.triples_cells.length
-        hash = {}; count = 1; a = 0; b = 1; c = 2
+        count = 1; a = 0; b = 1; c = 2
 
-        loop do
-          break if a == length - 1
+        {}.tap do |hash|
+          loop do
+            break if a == length - 1
 
-          while c <= length - 1
-            hash[count] = [a, b, c]
-            count += 1; c += 1
-          end
+            while c <= length - 1
+              hash[count] = [a, b, c]
+              count += 1; c += 1
+            end
 
-          if b == length-1 && c == length
-            a += 1; b = a+1; c = a+2
-          else
-            b += 1; c = b+1
+            if b == length - 1 && c == length
+              a += 1; b = a + 1; c = a + 2
+            else
+              b += 1; c = b + 1
+            end
           end
         end
-        hash
       end
     end
   end

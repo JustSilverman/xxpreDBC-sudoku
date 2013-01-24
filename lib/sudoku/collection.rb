@@ -81,7 +81,7 @@ module Sudoku
     end
 
     def solve_by_doubles
-      @cells.each { |cell| cell.update_cell_val(self.doubles) } unless self.doubles.nil?
+      @cells.each { |cell| cell.update_cell_val(self.doubles) } if self.doubles
     end
 
     def doubles
@@ -93,14 +93,13 @@ module Sudoku
       doubles = {}
       @cells.each { |cell| doubles[cell.id] = cell.values if cell.values.length == 2 }
 
-      return nil unless doubles.length >= 2
-      nil.tap do |doubles_array|
-        doubles.each do |k, v|
-          copy = doubles.dup
-          copy.delete(k)
-          doubles_array = v if copy.has_value?(v)
+      if doubles.length >= 2
+        doubles.each do |key, value|
+          return value if doubles.dup.delete_if {|k, v| k == key }.has_value?(value)
         end
+        nil
       end
+
     end
 
     def solve_by_triples

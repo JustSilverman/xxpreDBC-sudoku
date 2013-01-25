@@ -43,8 +43,7 @@ module Sudoku
     end
 
     def errors?
-    # Determines if there are any duplicate solutions in a collection,
-    # which would represent an error in the puzzle.
+    # Determines if there are any duplicate solutions in a collection
       sols = []
       @cells.each {|c| sols << c.solution unless c.solution.nil? }
       sols.uniq != sols
@@ -71,8 +70,6 @@ module Sudoku
     def uniq_values
     # Helper method for solve_by_solutions
     # Finds and returns any remaining possible values in the collection that are only present in one cell.
-    # Finding a unique value indicates such value should be the solution of
-    # cell in which it is found.
       count_hash = {}
       values = self.values.flatten.sort.each do |value|
         count_hash[value] = count_hash[value].nil? ? 1 : (count_hash[value] + 1)

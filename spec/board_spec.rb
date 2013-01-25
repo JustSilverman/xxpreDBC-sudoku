@@ -67,27 +67,6 @@ module Sudoku
       solutions.must_equal [8,nil,nil,nil,7,nil,nil,nil,nil]
     end
 
-    it "should retrieve row by row id" do
-      row = @board.row_by_row_id(3)
-      solutions = []
-      row.cells.each {|c| solutions << c.solution}
-      solutions.must_equal [nil,nil,nil,8,nil,nil,2,6,1]
-    end
-
-    it "should retrieve column by column id" do
-      column = @board.col_by_col_id(3)
-      solutions = []
-      column.cells.each {|c| solutions << c.solution}
-      solutions.must_equal [nil,4,nil,nil,nil,nil,nil,nil,nil]
-    end
-
-    it "should retrieve block by block id" do
-      block = @board.block_by_block_id(3)
-      solutions = []
-      block.cells.each {|c| solutions << c.solution}
-      solutions.must_equal [nil,nil,nil,nil,nil,nil,2,6,1]
-    end
-
     it "should detect board errors" do
       @board.cell(3).set_solution(2)
       @board.board_errors?.must_equal true

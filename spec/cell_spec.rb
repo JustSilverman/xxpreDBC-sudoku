@@ -2,7 +2,7 @@ require_relative '../lib/sudoku/cell.rb'
 require 'minitest/autorun'
 
 module Sudoku
-  
+
   describe Cell do
     before do
       @cell1 = Cell.new(1)
@@ -22,7 +22,7 @@ module Sudoku
       @cell1.solution.must_equal 3
       @cell1.values.length.must_equal 1
     end
-    
+
     it "must be able to update its values" do
       @cell1.update_cell_val([1,2,3,4,5])
       @cell1.values.must_equal [6,7,8,9]

@@ -74,17 +74,29 @@ module Sudoku
       end
     end
 
+    def row_index
+      self.row_head_id / 9
+    end
+
     def col_head_id
       # Returns the ID of first cell of self's column
       @id % 9 == 0 ? 9 : (id % 9)
+    end
+
+    def col_index
+      self.col_head_id - 1
     end
 
     def block
       # Block is a 3X3 collection of cells.
       # There are 9 blocks on the board numbered 1-9 moving from top left to bottom right.
       # Method returns the block of cells self is in
+      populate_blocks[block_index + 1]
+    end
+
+    def block_index
       populate_blocks.values.each_with_index do |block, index|
-        break populate_blocks[index + 1] if block.include?(@id)
+        break index if block.include?(@id)
       end
     end
 

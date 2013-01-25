@@ -6,14 +6,16 @@ module Sudoku
   # Each board contains 9 rows, columns and blocks
   # Board can be represented by a two-dimensional hash of cells
 
-    attr_accessor :cells, :solutions, :unsolved_cell_ids
+    attr_accessor :cells, :rows, :solutions, :unsolved_cell_ids
 
     def initialize
     # Creates blank board. No cell contains a solution or any eliminated
     # possible solutions.
-      @cells = []
+      @cells     = [].tap { |cells| (1..81).to_a.each{ |id| cells << Cell.new(id) } }
+      @rows      = create_rows
+      @cols      = create_cols
+      @blocks    = create_blocks
       @solutions = []
-      (1..81).to_a.each{ |id| @cells << Cell.new(id) }
     end
 
     def populate_board(rows)
@@ -39,54 +41,37 @@ module Sudoku
   ###### METHODS TO RETRIEVE SPECIFIC COLLECTIONS ON THE BOARD ######
   ###################################################################
 
-  # row, col and block methods need to be modified so a new Collection
-  # is not created each time a row, column or block is modified.
-  # Potential solution would be to have an instance variable for each
-  # unique row, column and block. These methods would then just return
-  # the correct collection.
-
     def row(id)
     # Single cell ID as an arg and returns entire row the cell is part of.
-      Collection.new.tap do |row|
-        row_id = self.cell(id).row_head_id
-        (row_id..row_id + 8).to_a.each { |id| row.add_cell(self.cell(id)) }
-      end
+      @rows[self.cell(id).row_index]
     end
 
     def col(id)
     # Single cell ID as an arg and returns entire column the cell is part of.
-      Collection.new.tap do |col|
-        col_id = self.cell(id).col_head_id
-        col_ids = Array.new(9, col_id).each_with_index.map { |a, i| a = a + 9 * i }
-        col_ids.each { |id| col.add_cell(self.cell(id)) }
-      end
+      @cols[self.cell(id).col_index]
     end
 
     def block(id)
     # Single cell ID as an arg and returns entire block the cell is part of.
-      Collection.new.tap do |block|
-        block_ids = self.cell(id).block
-        block_ids.each { |block_id| block.add_cell(self.cell(block_id)) }
-      end
+      @blocks[self.cell(id).block_index]
     end
 
     def row_by_row_id(id)
     # Row ID as an arg and returns entire row.
     # i.e. Row ID 1 includes cells with IDs 1..9
-      self.row(id * 9 - 8)
+      @rows[id - 1]
     end
 
     def col_by_col_id(id)
     # Column ID as an arg and returns entire row.
     # i.e. Column ID 1 includes cells [1,10,19,28,36,45,54,63,72]
-      self.col( id % 9 == 0 ? 9 : ( id % 9 ) )
+      @cols[id - 1]
     end
 
     def block_by_block_id(id)
     # Block ID as an arg and returns entire row.
     # i.e. Block ID 1 includes cells [1,2,3,10,11,12,19,20,21]
-      blocks = Cell.new(1).populate_blocks
-      self.block(blocks[id][1])
+      @blocks[id - 1]
     end
 
     def board_errors?
@@ -188,6 +173,34 @@ module Sudoku
       self.block(id).solve_by_solutions
       self.block(id).solve_by_doubles
       self.block(id).solve_by_triples
+    end
+
+    private
+    def create_rows
+      9.times.map do |i|
+        Collection.new.tap do |row|
+          row_id = i * 9 + 1
+          (row_id..row_id + 8).to_a.each { |id| row.add_cell(self.cell(id)) }
+        end
+      end
+    end
+
+    def create_cols
+      9.times.map do |i|
+        Collection.new.tap do |col|
+          col_ids = Array.new(9, i + 1).each_with_index.map { |a, i| a = a + 9 * i }
+          col_ids.each { |id| col.add_cell(self.cell(id)) }
+        end
+      end
+    end
+
+    def create_blocks
+      9.times.map do |i|
+        Collection.new.tap do |block|
+          block_ids = self.cell(1).populate_blocks[i + 1]
+          block_ids.each { |block_id| block.add_cell(self.cell(block_id)) }
+        end
+      end
     end
   end
 end

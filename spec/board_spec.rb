@@ -2,14 +2,14 @@ require_relative '../lib/sudoku/board.rb'
 require 'minitest/autorun'
 
 module Sudoku
-  
+
   describe Cell do
     before do
       @board = Board.new
       @blank_board = Board.new
       @solved_board = Board.new
 
-      test_rows = {}  
+      test_rows = {}
       test_rows[1] = [8,2,0,3,0,0,0,0,0]
       test_rows[2] = [0,1,4,0,0,9,0,0,0]
       test_rows[3] = [0,0,0,8,0,0,2,6,1]
@@ -34,7 +34,7 @@ module Sudoku
       @board.populate_board test_rows
       @solved_board.populate_board solved_rows
     end
-  
+
     it "should have 81 cells" do
       @board.cells.length.must_equal 81
     end
@@ -104,7 +104,7 @@ module Sudoku
     end
 
     it "should return unsolved IDs" do
-      @board.unsolved_ids.must_equal [3,5,6,7,8,9,10,13,14,16,17,18,19,20,21,23,24,28,30,32,33,35,36,39,40,41,42,43,44,45,46,47,48,51,52,53,54,55,56,57,58,60,61,64,65,66,70,72,73,75,76,77,79,80,81] 
+      @board.unsolved_ids.must_equal [3,5,6,7,8,9,10,13,14,16,17,18,19,20,21,23,24,28,30,32,33,35,36,39,40,41,42,43,44,45,46,47,48,51,52,53,54,55,56,57,58,60,61,64,65,66,70,72,73,75,76,77,79,80,81]
     end
   end
 end
